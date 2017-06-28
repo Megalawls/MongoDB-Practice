@@ -1,0 +1,65 @@
+//3 	Insert a document of your own home town/city, based on the same format as other documents into the collection.
+//Inserts location
+db.locations.insert({
+     _id: 99951,
+     city: "LONDON",
+    loc: {
+         [0]: 51.508530,
+         [1]: -0.076132
+    },
+    pop: 10549000
+})
+
+//4 	Find all of the cities in the state of Tennessee (TN).
+db.locations.find({state: "TN"},{city:1, state: 1},{multi: true})
+
+//5 	List all of the distinct states.
+db.locations.distinct("state")
+
+//6 	Remove the document you inserted previously from the zips collection.
+db.locations.remove({city: "LONDON"}
+
+//7 	Count the amount of documents in the collection.
+db.locations.find({},{},{multi: true}.count())
+
+//8 	How many zip codes appear in the state of Texas (TX)?
+db.locations.find({state: "TX"},{},{multi: true}).count()
+
+//9 	Find the most populated city in the collection?
+db.locations.find({},{_id: 0, city: 1},{multi: true}).sort({"pop": -1}).limit(1)
+
+//10 	Find the average population of New York (NY).
+db.locations.aggregate({$match: {state: "NY"}},{$group: {_id: "$state",avgpop:{$avg: "$pop"}}})
+
+//11 	Find the total population of Illinois (IL).
+db.locations.aggregate({$match: {state: "IL"}},{$group: {_id: "$state",totalpop:{$sum: "$pop"}}})
+
+//12 	Calculate the average population of cities in Illinois (IL) and Florida (FL) taken together with a population greater than 10,000.
+db.locations.aggregate({$match: {$or:[ {state: "IL"}, {state: "FL"} ],pop: {$gt: 10000}}},{$group: {_id: "$city",totalpop:{$avg: "$pop"}}})
+
+//13 	Find the top 3 cities with the highest population.
+db.locations.find({},{city: 1},{multi: true}).sort({pop: -1}).limit(3)
+
+//14 	How many cities does the state of WY have?
+db.locations.find({state: "WY"},{city: 1},{multi: true}).count()
+
+//15 	List all of the states with the amount of cities they have in them.
+db.locations.aggregate({$group: {_id: "$state", cities: {$sum: 1}}})
+
+//16 	List all of the states that have less than 80 cities.
+db.locations.aggregate({$group: {_id: "$state", cities: {$sum: 1}}},{$match: {cities: {$lt: 80}}})
+
+
+//17 	Youll notice that there are a number of cities listed more than once. Which city appears the most?
+db.getCollection("locations").aggregate([{$group: {_id: "$city", x: {$sum: 1}}},{$sort: {x: -1}},{$limit: 1}])
+
+//18 	Building on the previous question, list the top 3 cities that appear the most in this collection.
+db.getCollection("locations").aggregate([{$group: {_id: "$city", x: {$sum: 1}}},{$sort: {x: -1}},{$limit: 3}])
+
+//19 	List the cities that appear in more than 10 states.
+db.getCollection("locations").aggregate([
+	{$group: {_id: {city: "$city",state:"$state"}}},
+    {$group: {_id:"$_id.city", number_of_city: {$sum:1}}},
+    {$match: {number_of_city: {$gt: 10}}},
+    {$sort:  {number_of_city: -1}}
+    ])
